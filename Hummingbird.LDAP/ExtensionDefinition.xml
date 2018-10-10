@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ExtensionDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.hummingbird-alm.com/testframework/201610">
+  <Name>Hummingbird LDAP Client</Name>
+  <Id>baee1ee8-ecf9-4db5-bf44-cd567d091237</Id>
+  <Version Major="1" Minor="0" Build="6780" />
+  <MinFrameworkVersion Major="1" Minor="0" Build="0" />
+  <MaxFrameworkVersion Major="1" Minor="99" Build="99999" />
+  <Company>Huaxing YUAN</Company>
+  <Description>LDAP protocol implementation for Hummingbird Test Studio</Description>
+  <Copyright>Copyright 2018 Huaxing YUAN, All rights reserved.</Copyright>
+  <MainDllFile>Hummingbird.LDAP.dll</MainDllFile>
+  <AdditionalFiles>
+    <File>Hummingbird.LDAP.pdb</File>
+  </AdditionalFiles>
+</ExtensionDefinition>

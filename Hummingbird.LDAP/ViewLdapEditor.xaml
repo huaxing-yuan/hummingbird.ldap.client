@@ -1,0 +1,25 @@
+﻿<local:ObjectEditorBase
+    xmlns:local="clr-namespace:Hummingbird.TestFramework.Extensibility;assembly=Hummingbird.TestFramework" x:Class="Hummingbird.TestFramework.Services.ViewLdapEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="400" d:DesignWidth="700">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="LDAP QUERY:" Style="{DynamicResource TextBlockInformationHighlighted}" />
+        <TextBox Grid.Row="1" x:Name="txtQuery" Margin="10,4" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" MinHeight="80" TextChanged="txtQuery_TextChanged" />
+
+        <GridSplitter Grid.Row="2" Height="4" HorizontalAlignment="Stretch" />
+        <TextBlock Text="INFORMATION:" Style="{DynamicResource TextBlockInformationHighlighted}" Grid.Row="3" />
+        <TextBox Grid.Row="4" x:Name="txtResult" Margin="10,4" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" />
+    </Grid>
+</local:ObjectEditorBase>
