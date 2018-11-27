@@ -12,19 +12,19 @@ namespace Hummingbird.TestFramework.Services
     internal class LdapClientHandler
     {
         internal static bool StopAllRequested;
-        private bool StopRequested;
-        Thread CyclingThread;
+        private static bool StopRequested;
+
         static DirectoryEntry currentEntry;
         static string currentServerAddress;
 
         internal LdapClientHandler()
         {
-            CyclingThread = new Thread(new ThreadStart(Cycle));
+            Thread CyclingThread = new Thread(new ThreadStart(Cycle));
             CyclingThread.IsBackground = true;
             CyclingThread.Start();
         }
 
-        private void Cycle()
+        private static void Cycle()
         {
             RequestData Object;
             while (!StopRequested && !StopAllRequested)
@@ -42,15 +42,12 @@ namespace Hummingbird.TestFramework.Services
             }
             if (currentEntry != null)
             {
-                lock (currentEntry)
-                {
-                    currentEntry.Close();
-                    currentEntry = null;
-                }
+                currentEntry.Close();
+                currentEntry = null;
             }
         }
 
-        internal void Stop()
+        internal static void Stop()
         {
             StopRequested = true;
             lock (LdapClient.RequestQueue)
@@ -92,9 +89,7 @@ namespace Hummingbird.TestFramework.Services
                     dSearch.SizeLimit = LdapClient.sizeLimit;
                     var result = dSearch.FindAll();
                     obj.ReferencedMessage.Status = MessageStatus.Sent;
-                    string responseText;
-                    List<LdapObject> ldapObjects;
-                    FormatSearchResult(result, out responseText, out ldapObjects);
+                    FormatSearchResult(result, out string responseText, out List<LdapObject> ldapObjects);
                     result.Dispose();
                     obj.ReferencedMessage.Tag = ldapObjects;
                     obj.ReferencedMessage.ResponseText = responseText;
@@ -114,6 +109,7 @@ namespace Hummingbird.TestFramework.Services
             if (result == null)
             {
                 text = "No result found for your query.";
+                return;
             }
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
             foreach (SearchResult sr in result)
@@ -147,7 +143,7 @@ namespace Hummingbird.TestFramework.Services
                         {
                             object value = sr.Properties[var][i];
                             string stringvalue = FormatValue(value);
-                            sb.AppendLine(string.Format("        [{1}] => {2}", var, i, stringvalue));
+                            sb.AppendLine(string.Format("        [{0}] => {1}", i, stringvalue));
                             o.Attributes.Add(new AttributeIndexValue()
                             {
                                 Attribute = string.Empty,

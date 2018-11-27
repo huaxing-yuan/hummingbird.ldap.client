@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Hummingbird.TestFramework.Services
 {
+    [Serializable]
     public class AttributeIndexValue
     {
         public string Attribute { get; set; }
@@ -12,10 +13,11 @@ namespace Hummingbird.TestFramework.Services
         public string Value { get; set; }
     }
 
+    [Serializable]
     public class LdapObject
     {
         public string Name { get; set; }
-        public List<AttributeIndexValue> Attributes = new List<AttributeIndexValue>();
+        public List<AttributeIndexValue> Attributes { get; set; } = new List<AttributeIndexValue>();
 
         public override string ToString()
         {

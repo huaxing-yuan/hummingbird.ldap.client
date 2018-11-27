@@ -11,13 +11,12 @@ using System.Threading;
 
 namespace Hummingbird.TestFramework.Services
 {
-    public class LdapClient : AbstractClient
+    public sealed class LdapClient : AbstractClient
     {
-        internal static Queue RequestQueue = new Queue();
-        private static LdapClientHandler[] Handlers;
-        //internal static Dictionary<Type, object> CachedClients = new Dictionary<Type, object>();
-        static internal int threadCount = 20;
-        static internal int queueLength = 500;
+        internal readonly static Queue RequestQueue = new Queue();
+        static private int threadCount = 20;
+        private readonly static LdapClientHandler[] Handlers = new LdapClientHandler[threadCount];
+        static private int queueLength = 500;
         static internal string serverAddress;
         static internal int sizeLimit = 30;
 
@@ -31,11 +30,10 @@ namespace Hummingbird.TestFramework.Services
             this.IsRunning = false;
             this.Information = "LDAP Client handler";
             this.Description = Information;
-            RequestQueue = new Queue();
             Parameters.Add(PARAM_LDAP_SERVER, new Parameter() { Name = PARAM_LDAP_SERVER,  DefaultValue = "", Description = "The LDAP server address, ex ldap://serveraddress:port. Empty string means the currect Windows Active Directory", ParameterType = ParameterType.String });
             Parameters.Add(PARAM_LDAP_MAX_RESULT, new Parameter() { Name = PARAM_LDAP_MAX_RESULT, DefaultValue = "30", Description = "The maximum returned result in a query. The value 0 means unlimited (may cause performance issues then query is badly written)", ParameterType = ParameterType.Integer });
 
-            this.SupportedRequests.Add(new RequestMetadata()
+            this.SupportedRequests.Add(new AbstractMetadata()
             {
                 ApplicationName = "Generic",
                 ServiceCategory = "Generic",
@@ -52,7 +50,6 @@ namespace Hummingbird.TestFramework.Services
 
         public override void Start()
         {
-            Handlers = new LdapClientHandler[threadCount];
             LdapClientHandler.StopAllRequested = false;
             for (int i = 0; i < threadCount; i++)
             {
