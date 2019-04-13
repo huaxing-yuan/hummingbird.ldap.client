@@ -9,25 +9,17 @@ using System.Threading;
 
 namespace Hummingbird.TestFramework.Services
 {
-    internal class LdapClientHandler
+    internal static class LdapClientHandler
     {
-        internal static bool StopAllRequested;
-        private static bool StopRequested;
+        internal static bool StopAllRequested { get; set; }
 
         static DirectoryEntry currentEntry;
         static string currentServerAddress;
 
-        internal LdapClientHandler()
-        {
-            Thread CyclingThread = new Thread(new ThreadStart(Cycle));
-            CyclingThread.IsBackground = true;
-            CyclingThread.Start();
-        }
-
         private static void Cycle()
         {
             RequestData Object;
-            while (!StopRequested && !StopAllRequested)
+            while (!StopAllRequested)
             {
                 lock (LdapClient.RequestQueue)
                 {
@@ -47,21 +39,19 @@ namespace Hummingbird.TestFramework.Services
             }
         }
 
-        internal static void Stop()
-        {
-            StopRequested = true;
-            lock (LdapClient.RequestQueue)
-            {
-                Monitor.PulseAll(LdapClient.RequestQueue);
-            }
-        }
-
         internal static void StopAll()
         {
             StopAllRequested = true;
             lock (LdapClient.RequestQueue)
             {
                 Monitor.PulseAll(LdapClient.RequestQueue);
+            }
+            try
+            {
+                currentEntry?.Dispose();
+            }
+            catch {
+                //ignore any error when doing dispose.
             }
         }
 
@@ -72,7 +62,7 @@ namespace Hummingbird.TestFramework.Services
                 obj.ReferencedMessage.Status = MessageStatus.Sending;
                 obj.ReferencedMessage.RequestText = obj.Data.ToString();
                 obj.ReferencedMessage.RequestObject = obj.Data;
-                string serverAddress = LdapClient.serverAddress;
+                string serverAddress = LdapClient.ServerAddress;
                 if (currentEntry == null || serverAddress != currentServerAddress)
                 {
                     currentServerAddress = serverAddress;
@@ -84,16 +74,19 @@ namespace Hummingbird.TestFramework.Services
                     {
                         currentEntry = new DirectoryEntry(serverAddress);
                     }
-                    DirectorySearcher dSearch = new DirectorySearcher(currentEntry);
-                    dSearch.Filter = obj.Data.ToString();
-                    dSearch.SizeLimit = LdapClient.sizeLimit;
-                    var result = dSearch.FindAll();
-                    obj.ReferencedMessage.Status = MessageStatus.Sent;
-                    FormatSearchResult(result, out string responseText, out List<LdapObject> ldapObjects);
-                    result.Dispose();
-                    obj.ReferencedMessage.Tag = ldapObjects;
-                    obj.ReferencedMessage.ResponseText = responseText;
                 }
+                using (DirectorySearcher dSearch = new DirectorySearcher(currentEntry))
+                {
+                    dSearch.Filter = obj.Data.ToString();
+                    dSearch.SizeLimit = LdapClient.SizeLimit;
+                    using (var result = dSearch.FindAll())
+                    {
+                        FormatSearchResult(result, out string responseText, out List<LdapObject> ldapObjects);
+                        MessageQueue.UpdateOutput(obj.ReferencedMessage, ldapObjects, responseText, MessageStatus.Sent);
+                    }
+                }
+
+
             }
             catch (Exception ex)
             {
@@ -101,6 +94,13 @@ namespace Hummingbird.TestFramework.Services
                 Log.WriteMessage(LogLevel.Error, string.Format("Message failed: {0}", ex.Message));
             }
 
+        }
+
+        internal static void StartNewHandler()
+        {
+            Thread CyclingThread = new Thread(new ThreadStart(Cycle));
+            CyclingThread.IsBackground = true;
+            CyclingThread.Start();
         }
 
         internal static void FormatSearchResult(SearchResultCollection result, out string text, out List<LdapObject> obj)

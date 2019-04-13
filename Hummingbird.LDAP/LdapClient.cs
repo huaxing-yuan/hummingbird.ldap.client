@@ -15,10 +15,9 @@ namespace Hummingbird.TestFramework.Services
     {
         internal readonly static Queue RequestQueue = new Queue();
         static private int threadCount = 20;
-        private readonly static LdapClientHandler[] Handlers = new LdapClientHandler[threadCount];
         static private int queueLength = 500;
-        static internal string serverAddress;
-        static internal int sizeLimit = 30;
+        static internal string ServerAddress { get; private set; }
+        static internal int SizeLimit { get; private set; } = 30;
 
         private static string PARAM_LDAP_SERVER = "LDAP Server address";
         private static string PARAM_LDAP_MAX_RESULT = "Max result count";
@@ -53,7 +52,7 @@ namespace Hummingbird.TestFramework.Services
             LdapClientHandler.StopAllRequested = false;
             for (int i = 0; i < threadCount; i++)
             {
-                Handlers[i] = new LdapClientHandler();
+                LdapClientHandler.StartNewHandler();
             }
         }
 
@@ -65,8 +64,8 @@ namespace Hummingbird.TestFramework.Services
         public override void ApplySettings(IEnumerable<Parameter> appliedParameters)
         {
             base.ApplySettings(appliedParameters);
-            serverAddress = Parameters[PARAM_LDAP_SERVER].Value;
-            sizeLimit = int.Parse(Parameters[PARAM_LDAP_MAX_RESULT].Value);
+            ServerAddress = Parameters[PARAM_LDAP_SERVER].Value;
+            SizeLimit = int.Parse(Parameters[PARAM_LDAP_MAX_RESULT].Value);
         }
 
         protected override void SendRequest(RequestData requestData)
